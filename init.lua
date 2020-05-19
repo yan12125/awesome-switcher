@@ -11,7 +11,6 @@ local timer = gears.timer
 local client = client
 awful.client = require('awful.client')
 
-local naughty = require("naughty")
 local string = string
 local tostring = tostring
 local tonumber = tonumber
@@ -77,7 +76,9 @@ function _M.getClients()
 	local c = awful.client.focus.history.get(s, idx)
 
 	while c do
-		table.insert(clients, c)
+		if c.type ~= "dock" and c.type ~= "desktop" then
+			table.insert(clients, c)
+		end
 
 		idx = idx + 1
 		c = awful.client.focus.history.get(s, idx)
@@ -108,6 +109,9 @@ function _M.getClients()
 			-- check if client is already in the history
 			-- if not, add it
 			local addToTable = true
+			if c.type == "dock" or c.type == "desktop" then
+				addToTable = false
+			end
 			for k = 1, #clients do
 				if clients[k] == c then
 					addToTable = false
@@ -163,10 +167,10 @@ function _M.clientsHaveChanged()
 end
 
 function _M.createPreviewText(client)
-	if client.class then
-		return " - " .. client.class
-	else
+	if client.name then
 		return " - " .. client.name
+	else
+		return " - " .. client.class
 	end
 end
 
@@ -245,7 +249,7 @@ function _M.preview()
 	_M.preview_wbox.border_color = _M.settings.preview_box_border
 
 	-- Make the wibox the right size, based on the number of clients
-	local n = math.max(7, #_M.altTabTable)
+	local n = math.max(5, #_M.altTabTable)
 	local W = screen[mouse.screen].geometry.width -- + 2 * _M.preview_wbox.border_width
 	local w = W / n -- widget width
 	local h = w * 0.75  -- widget height
